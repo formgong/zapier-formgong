@@ -1,16 +1,18 @@
 'use strict';
 
 const includeToken = (request, z, bundle) => {
-  if (bundle.authData.apiKey) {
-    request.headers = request.headers || {};
-    request.headers.Authorization = `Bearer ${bundle.authData.apiKey}`;
+  const token = bundle.authData.access_token;
+  if (token && !request.headers.Authorization && !/\/oauth\/token$/.test(request.url)) {
+    request.headers.Authorization = `Bearer ${token}`;
   }
   return request;
 };
 
-const handleBadResponses = (response, z) => {
-  if (response.status === 401) {
-    throw new z.errors.Error('The Formgong API token is invalid, expired or revoked.', 'AuthenticationError', response.status);
+// An expired access token is refreshed once; a revoked connection asks the user to reconnect.
+const handleBadResponses = (response, z, bundle) => {
+  if (response.status === 401 && !/\/oauth\/token$/.test(response.request.url)) {
+    if (bundle.authData.refresh_token) throw new z.errors.RefreshAuthError('Formgong access token expired.');
+    throw new z.errors.Error('The Formgong connection is invalid or was revoked. Reconnect Formgong.', 'AuthenticationError', response.status);
   }
   return response;
 };

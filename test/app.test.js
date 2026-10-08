@@ -9,7 +9,7 @@ const { validSignature } = require('../lib/formgong');
 const appTester = zapier.createAppTester(App);
 zapier.tools.env.inject();
 const base = (process.env.FORMGONG_BASE_URL || 'https://formgong.com').replace(/\/+$/, '');
-const authData = { apiKey: process.env.FORMGONG_TOKEN };
+const authData = { access_token: process.env.FORMGONG_TOKEN };
 const live = Boolean(process.env.FORMGONG_TOKEN);
 
 describe('signature', () => {
@@ -31,7 +31,9 @@ describe('signature', () => {
   it('connects with a valid token and refuses a bad one', async () => {
     const ok = await appTester(App.authentication.test, { authData });
     expect(ok.forms).toBeGreaterThan(0);
-    await expect(appTester(App.authentication.test, { authData: { apiKey: 'fgp_' + '0'.repeat(64) } })).rejects.toThrow(/invalid, expired or revoked/);
+    // Zapier answers a 401 by refreshing the token; a bad refresh token ends the connection.
+    await expect(appTester(App.authentication.test, { authData: { access_token: 'fgp_' + '0'.repeat(64) } })).rejects.toMatchObject({ name: 'RefreshAuthError' });
+    await expect(appTester(App.authentication.oauth2Config.refreshAccessToken, { authData: { refresh_token: 'fgr_' + '0'.repeat(64) } })).rejects.toThrow(/Formgong sign-in failed/);
   });
 
   it('creates a form and lists it in the dropdown', async () => {
