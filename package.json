@@ -1,0 +1,22 @@
+{
+  "name": "zapier-formgong",
+  "version": "1.0.0",
+  "description": "Zapier integration for Formgong: trigger Zaps on new form submissions (signed REST hooks) and create forms.",
+  "scripts": {
+    "test": "jest --testTimeout 10000"
+  },
+  "dependencies": {
+    "zapier-platform-core": "19.2.0"
+  },
+  "devDependencies": {
+    "jest": "^29.6.0"
+  },
+  "private": true,
+  "main": "index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/formgong/zapier-formgong.git"
+  },
+  "author": "Formgong <support@formgong.com>"
+}
